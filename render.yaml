@@ -1,0 +1,13 @@
+services:
+  - type: worker
+    name: youtube-audio-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: GOOGLE_DRIVE_FOLDER_ID
+        sync: false
+      - key: GOOGLE_CREDENTIALS_PATH
+        value: oauth_credentials.json
