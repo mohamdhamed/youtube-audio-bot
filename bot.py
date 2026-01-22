@@ -270,5 +270,28 @@ def main() -> None:
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
+def start_health_server():
+    """Start a simple HTTP server for Koyeb health checks."""
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+    import threading
+    
+    class HealthHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b'OK')
+        
+        def log_message(self, format, *args):
+            pass  # Suppress logging
+    
+    port = int(os.getenv('PORT', 8000))
+    server = HTTPServer(('0.0.0.0', port), HealthHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    print(f"🌐 Health server running on port {port}")
+
+
 if __name__ == '__main__':
+    start_health_server()
     main()
