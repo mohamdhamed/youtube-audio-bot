@@ -58,7 +58,8 @@ def get_drive_service(credentials_path: str = "oauth_credentials.json"):
 def upload_to_drive(
     file_path: str,
     folder_id: str,
-    credentials_path: str = "credentials.json"
+    credentials_path: str = "credentials.json",
+    upload_name: Optional[str] = None
 ) -> Optional[str]:
     """
     Upload a file to Google Drive.
@@ -67,6 +68,7 @@ def upload_to_drive(
         file_path: Path to the local file to upload
         folder_id: Google Drive folder ID to upload to
         credentials_path: Path to OAuth credentials
+        upload_name: Optional name for the file on Drive (defaults to local filename)
         
     Returns:
         The file ID if successful, None if failed
@@ -76,8 +78,8 @@ def upload_to_drive(
         if service is None:
             return None
         
-        # Get file name from path
-        file_name = os.path.basename(file_path)
+        # Get file name from path if not provided
+        file_name = upload_name if upload_name else os.path.basename(file_path)
         
         # File metadata
         file_metadata = {
