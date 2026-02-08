@@ -11,32 +11,18 @@ from typing import Optional, Tuple
 def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Optional[str], Optional[str]]:
     """
     Download audio from a YouTube video and convert to MP3.
-    
-    Args:
-        youtube_url: The YouTube video URL
-        output_dir: Directory to save the audio file
-        
-    Returns:
-        Tuple of (file_path, title) if successful, (None, error_message) if failed
     """
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
-    
-    # Configure yt-dlp options
-    # FFmpeg path - try env var, system path, then common locations
     import shutil
     
+    # FFmpeg detection
     ffmpeg_location = os.getenv('FFMPEG_PATH')
-    
-    if not ffmpeg_location:
-        if shutil.which('ffmpeg'):
-            # If in PATH, let yt-dlp find it (or explicitly set it if needed, but usually None is fine)
-            ffmpeg_location = None 
-        else:
-            # Fallback to common Windows paths
+    if not ffmpeg_location and not shutil.which('ffmpeg'):
+        # Only check these on Windows if not found in PATH
+        if os.name == 'nt':
             ffmpeg_paths = [
                 os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin'),
-                os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\WinGet\Links'),
                 r'C:\ffmpeg\bin',
                 r'C:\Program Files\ffmpeg\bin',
             ]
@@ -44,7 +30,25 @@ def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Opt
                 if os.path.exists(os.path.join(path, 'ffmpeg.exe')):
                     ffmpeg_location = path
                     break
-    
+
+    # 1. Extract info first (without downloading) to get ID and Title
+    try:
+        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+            info = ydl.extract_info(youtube_url, download=False)
+            if not info:
+                return None, "Failed to extract video info"
+            
+            video_id = info.get('id')
+            title = info.get('title', 'audio')
+            
+            # Use ID for filename to avoid special char issues
+            filename = f"{video_id}.mp3"
+            output_path = os.path.join(output_dir, filename)
+
+    except Exception as e:
+        return None, f"Extraction error: {str(e)}"
+
+    # 2. Download with deterministic filename
     ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
@@ -52,9 +56,10 @@ def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Opt
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
+        'outtmpl': os.path.join(output_dir, f'{video_id}.%(ext)s'),
         'quiet': True,
         'no_warnings': True,
+        'overwrite': True,
     }
     
     if ffmpeg_location:
@@ -62,36 +67,12 @@ def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Opt
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            # Extract video info
-            info = ydl.extract_info(youtube_url, download=True)
-            
-            if info is None:
-                return None, "Failed to extract video information"
-            
-            # Get the title and construct the output filename
-            title = info.get('title', 'audio')
-            # Clean the title for filename
-            safe_title = "".join(c for c in title if c.isalnum() or c in (' ', '-', '_')).strip()
-            output_path = os.path.join(output_dir, f"{safe_title}.mp3")
-            
-            # yt-dlp may create file with original title, find it
-            for file in os.listdir(output_dir):
-                if file.endswith('.mp3') and title[:20] in file:
-                    output_path = os.path.join(output_dir, file)
-                    break
+            ydl.download([youtube_url])
             
             if os.path.exists(output_path):
                 return output_path, title
             
-            # Try to find any newly created mp3 file
-            for file in os.listdir(output_dir):
-                if file.endswith('.mp3'):
-                    full_path = os.path.join(output_dir, file)
-                    # Check if this is a recently created file
-                    if os.path.getctime(full_path) > os.path.getctime(output_dir):
-                        return full_path, title
-            
-            return None, "Audio file not found after download"
+            return None, "Audio file not found after download (logic error)"
             
     except yt_dlp.DownloadError as e:
         return None, f"Download error: {str(e)}"
