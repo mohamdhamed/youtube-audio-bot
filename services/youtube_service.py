@@ -23,19 +23,27 @@ def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Opt
     os.makedirs(output_dir, exist_ok=True)
     
     # Configure yt-dlp options
-    # FFmpeg path - try common locations
-    import os as _os
-    ffmpeg_paths = [
-        _os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin'),
-        _os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\WinGet\Links'),
-        r'C:\ffmpeg\bin',
-        r'C:\Program Files\ffmpeg\bin',
-    ]
-    ffmpeg_location = None
-    for path in ffmpeg_paths:
-        if _os.path.exists(_os.path.join(path, 'ffmpeg.exe')):
-            ffmpeg_location = path
-            break
+    # FFmpeg path - try env var, system path, then common locations
+    import shutil
+    
+    ffmpeg_location = os.getenv('FFMPEG_PATH')
+    
+    if not ffmpeg_location:
+        if shutil.which('ffmpeg'):
+            # If in PATH, let yt-dlp find it (or explicitly set it if needed, but usually None is fine)
+            ffmpeg_location = None 
+        else:
+            # Fallback to common Windows paths
+            ffmpeg_paths = [
+                os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin'),
+                os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\WinGet\Links'),
+                r'C:\ffmpeg\bin',
+                r'C:\Program Files\ffmpeg\bin',
+            ]
+            for path in ffmpeg_paths:
+                if os.path.exists(os.path.join(path, 'ffmpeg.exe')):
+                    ffmpeg_location = path
+                    break
     
     ydl_opts = {
         'format': 'bestaudio/best',

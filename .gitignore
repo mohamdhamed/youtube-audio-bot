@@ -1,5 +1,17 @@
+# Environment Variables
 .env
+
+# Downloads & Temp
 downloads/
+test_dl/
 __pycache__/
 *.pyc
 .venv/
+
+# Sensitive Files
+token.pickle
+credentials.json
+oauth_credentials.json
+
+# System Files
+.DS_Store

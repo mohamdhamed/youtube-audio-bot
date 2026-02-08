@@ -1,0 +1,27 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+.venv
+venv
+env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Test files
+test_dl
+
+# Documentation
+README.md
+
+# Local downloads (will use volume mount)
+downloads/*
+!downloads/.gitkeep
