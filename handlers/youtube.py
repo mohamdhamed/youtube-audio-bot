@@ -20,7 +20,7 @@ async def process_youtube_url(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     try:
         loop = asyncio.get_running_loop()
-        file_path, result = await loop.run_in_executor(None, partial(download_audio, url, "downloads"))
+        file_path, result, thumbnail_path = await loop.run_in_executor(None, partial(download_audio, url, "downloads"))
         
         if file_path is None:
             await processing_msg.edit_text(f"❌ فشل التحميل: {result}")
@@ -34,11 +34,18 @@ async def process_youtube_url(update: Update, context: ContextTypes.DEFAULT_TYPE
         if file_size_mb <= 50:
             try:
                 with open(file_path, 'rb') as audio_file:
-                    await update.message.reply_audio(
-                        audio=audio_file,
-                        title=result,
-                        caption=f"🎵 {result}"
-                    )
+                    thumb_file = open(thumbnail_path, 'rb') if thumbnail_path else None
+                    try:
+                        await update.message.reply_audio(
+                            audio=audio_file,
+                            title=result,
+                            thumbnail=thumb_file,
+                            caption=f"🎵 {result}"
+                        )
+                    finally:
+                        if thumb_file:
+                            thumb_file.close()
+                            
                 telegram_sent = True
             except Exception as send_error:
                 logger.warning(f"Failed to send via Telegram: {send_error}")
@@ -77,6 +84,8 @@ async def process_youtube_url(update: Update, context: ContextTypes.DEFAULT_TYPE
         
         try:
             os.remove(file_path)
+            if thumbnail_path:
+                os.remove(thumbnail_path)
         except:
             pass
 

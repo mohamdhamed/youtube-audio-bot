@@ -8,9 +8,12 @@ import yt_dlp
 from typing import Optional, Tuple
 
 
-def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Optional[str], Optional[str]]:
+def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
     Download audio from a YouTube video and convert to MP3.
+    
+    Returns:
+        Tuple of (file_path, title, thumbnail_path) if successful
     """
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
@@ -36,7 +39,7 @@ def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Opt
         with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
             info = ydl.extract_info(youtube_url, download=False)
             if not info:
-                return None, "Failed to extract video info"
+                return None, "Failed to extract video info", None
             
             video_id = info.get('id')
             title = info.get('title', 'audio')
@@ -46,7 +49,7 @@ def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Opt
             output_path = os.path.join(output_dir, filename)
 
     except Exception as e:
-        return None, f"Extraction error: {str(e)}"
+        return None, f"Extraction error: {str(e)}", None
 
     # 2. Download with deterministic filename
     ydl_opts = {
@@ -77,15 +80,24 @@ def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Opt
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([youtube_url])
             
-            if os.path.exists(output_path):
-                return output_path, title
+            # Find thumbnail
+            thumbnail_path = None
+            for ext in ['jpg', 'jpeg', 'webp', 'png']:
+                potential_thumb = os.path.join(output_dir, f"{video_id}.{ext}")
+                if os.path.exists(potential_thumb):
+                    thumbnail_path = potential_thumb
+                    break
             
-            return None, "Audio file not found after download (logic error)"
+            if os.path.exists(output_path):
+                return output_path, title, thumbnail_path
+            
+            return None, "Audio file not found after download (logic error)", None
             
     except yt_dlp.DownloadError as e:
-        return None, f"Download error: {str(e)}"
+        return None, f"Download error: {str(e)}", None
     except Exception as e:
-        return None, f"Unexpected error: {str(e)}"
+        return None, f"Unexpected error: {str(e)}", None
+
 
 
 def is_youtube_url(url: str) -> bool:
