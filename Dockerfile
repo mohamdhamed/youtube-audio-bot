@@ -1,9 +1,10 @@
 # Use Python 3.11 slim image
 FROM python:3.11-slim
 
-# Install ffmpeg (required for yt-dlp audio conversion)
+# Install ffmpeg and curl (required for healthcheck)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory

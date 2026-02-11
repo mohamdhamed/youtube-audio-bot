@@ -52,7 +52,7 @@ async def process_youtube_url(update: Update, context: ContextTypes.DEFAULT_TYPE
             
             file_id = await loop.run_in_executor(
                 None,
-                partial(upload_to_drive, file_path, GOOGLE_DRIVE_FOLDER_ID, CREDENTIALS_PATH)
+                partial(upload_to_drive, file_path, GOOGLE_DRIVE_FOLDER_ID, CREDENTIALS_PATH, f"{result}.mp3")
             )
             
             if file_id:
