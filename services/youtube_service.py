@@ -51,11 +51,19 @@ def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Opt
     # 2. Download with deterministic filename
     ydl_opts = {
         'format': 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
+        # Write thumbnail to disk so we can embed it
+        'writethumbnail': True,
+        'postprocessors': [
+            {
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            },
+            # Embed thumbnail in the audio file
+            {'key': 'EmbedThumbnail'},
+            # Add metadata (Title, Artist, etc.)
+            {'key': 'FFmpegMetadata'},
+        ],
         'outtmpl': os.path.join(output_dir, f'{video_id}.%(ext)s'),
         'quiet': True,
         'no_warnings': True,
