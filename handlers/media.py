@@ -63,7 +63,7 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             folder_id = DEFAULT_FOLDER
             await processing_msg.edit_text("☁️ جاري الرفع إلى Drive...")
             loop = asyncio.get_running_loop()
-            file_id = await loop.run_in_executor(None, partial(upload_to_drive, local_path, folder_id, CREDENTIALS_PATH))
+            file_id, error = await loop.run_in_executor(None, partial(upload_to_drive, local_path, folder_id, CREDENTIALS_PATH))
             
             if file_id:
                 drive_link = f"https://drive.google.com/file/d/{file_id}/view"
@@ -72,7 +72,7 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                     parse_mode='Markdown'
                 )
             else:
-                await processing_msg.edit_text("❌ فشل الرفع")
+                await processing_msg.edit_text(f"❌ فشل الرفع: {error}")
             os.remove(local_path)
         else:
             pending_uploads[user_id] = {'file_path': local_path, 'file_name': file_name}
@@ -141,7 +141,7 @@ async def handle_folder_callback(update: Update, context: ContextTypes.DEFAULT_T
     
     try:
         loop = asyncio.get_running_loop()
-        file_id = await loop.run_in_executor(None, partial(upload_to_drive, file_path, folder_id, CREDENTIALS_PATH))
+        file_id, error = await loop.run_in_executor(None, partial(upload_to_drive, file_path, folder_id, CREDENTIALS_PATH))
         
         if file_id:
             drive_link = f"https://drive.google.com/file/d/{file_id}/view"
@@ -150,7 +150,7 @@ async def handle_folder_callback(update: Update, context: ContextTypes.DEFAULT_T
                 parse_mode='Markdown'
             )
         else:
-            await query.edit_message_text("❌ فشل الرفع")
+            await query.edit_message_text(f"❌ فشل الرفع: {error}")
     except Exception as e:
         logger.error(f"Error uploading: {e}")
         await query.edit_message_text(f"❌ خطأ: {str(e)}")
@@ -183,7 +183,10 @@ async def handle_video_choice_callback(update: Update, context: ContextTypes.DEF
             # Use current module check for FFmpeg or assume it's in path/service
             from services.youtube_service import get_ffmpeg_location
             ffmpeg_dir = get_ffmpeg_location()
-            ffmpeg_exe = os.path.join(ffmpeg_dir, 'ffmpeg.exe') if ffmpeg_dir else 'ffmpeg'
+            if ffmpeg_dir:
+                ffmpeg_exe = os.path.join(ffmpeg_dir, 'ffmpeg.exe' if os.name == 'nt' else 'ffmpeg')
+            else:
+                ffmpeg_exe = 'ffmpeg'
             
             import subprocess
             subprocess.run([
@@ -213,7 +216,7 @@ async def handle_video_choice_callback(update: Update, context: ContextTypes.DEF
         
         await query.edit_message_text(f"☁️ جاري الرفع إلى {folder_name}...")
         loop = asyncio.get_running_loop()
-        file_id = await loop.run_in_executor(None, partial(upload_to_drive, file_path, folder_id, CREDENTIALS_PATH))
+        file_id, error = await loop.run_in_executor(None, partial(upload_to_drive, file_path, folder_id, CREDENTIALS_PATH))
         
         if file_id:
             drive_link = f"https://drive.google.com/file/d/{file_id}/view"
@@ -223,7 +226,7 @@ async def handle_video_choice_callback(update: Update, context: ContextTypes.DEF
                 parse_mode='Markdown'
             )
         else:
-            await query.edit_message_text("❌ فشل الرفع")
+            await query.edit_message_text(f"❌ فشل الرفع: {error}")
         
         try:
            if os.path.exists(file_path): os.remove(file_path)

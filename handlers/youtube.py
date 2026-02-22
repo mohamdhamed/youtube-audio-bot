@@ -57,7 +57,7 @@ async def process_youtube_url(update: Update, context: ContextTypes.DEFAULT_TYPE
         if GOOGLE_DRIVE_FOLDER_ID:
             await processing_msg.edit_text("☁️ جاري الرفع إلى Google Drive...")
             
-            file_id = await loop.run_in_executor(
+            file_id, error = await loop.run_in_executor(
                 None,
                 partial(upload_to_drive, file_path, GOOGLE_DRIVE_FOLDER_ID, CREDENTIALS_PATH, f"{result}.mp3")
             )
@@ -75,7 +75,7 @@ async def process_youtube_url(update: Update, context: ContextTypes.DEFAULT_TYPE
                         parse_mode='Markdown'
                     )
             else:
-                await processing_msg.edit_text("⚠️ فشل الرفع لـ Drive")
+                await processing_msg.edit_text(f"⚠️ فشل الرفع لـ Drive: {error}")
         else:
              if not telegram_sent:
                 await processing_msg.edit_text("❌ الملف كبير جداً ولا يوجد Drive.")
@@ -92,17 +92,3 @@ async def process_youtube_url(update: Update, context: ContextTypes.DEFAULT_TYPE
     except Exception as e:
         logger.error(f"Error processing URL: {e}")
         await processing_msg.edit_text(f"❌ حدث خطأ: {str(e)}")
-
-@restricted
-async def handle_youtube_link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle incoming YouTube links."""
-    text = update.message.text.strip()
-    url_match = re.search(r'((?:https?://|www\.)[^\s]+)', text)
-    if not url_match:
-        return
-        
-    url = url_match.group(1)
-    if not is_youtube_url(url):
-        return
-    
-    await process_youtube_url(update, context, url)

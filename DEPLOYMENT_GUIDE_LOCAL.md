@@ -6,7 +6,7 @@
 أولاً، ارفع التعديلات التي قمنا بها إلى GitHub:
 ```bash
 git add .
-git commit -m "Update bot features and deployment files"
+git commit -m "Add web dashboard for bot management"
 git push origin main
 ```
 
@@ -40,6 +40,8 @@ scp token.pickle user@192.168.1.10:~/youtube-audio-bot/
 ```
 *(تأكد من تعديل المسار `~/youtube-audio-bot/` إذا كنت وضعت المشروع في مكان آخر)*
 
+> ⚠️ **ملاحظة:** تأكد أن ملف `.env` يحتوي على `DASHBOARD_PASSWORD` و `DASHBOARD_PORT`
+
 ## 4. التشغيل
 الآن ارجع لشاشة السيرفر (SSH) وشغل البوت باستخدام Docker:
 
@@ -47,7 +49,15 @@ scp token.pickle user@192.168.1.10:~/youtube-audio-bot/
 docker compose up -d --build
 ```
 
-## 5. التحديث مستقبلاً
+## 5. الوصول للداشبورد
+بعد التشغيل، افتح المتصفح على:
+```
+http://192.168.1.10:5000
+```
+- كلمة السر الافتراضية: `admin123`
+- يمكنك تغييرها من الداشبورد نفسه (قسم الإعدادات)
+
+## 6. التحديث مستقبلاً
 إذا عدلت أي كود، فقط:
 1. `git push` من جهازك.
 2. `git pull` في السيرفر.

@@ -8,6 +8,38 @@ import yt_dlp
 from typing import Optional, Tuple
 
 
+def get_ffmpeg_location() -> Optional[str]:
+    """
+    Detect FFmpeg location on the system.
+    
+    Returns:
+        Path to FFmpeg directory, or None if in system PATH
+    """
+    import shutil
+    
+    # Check environment variable first
+    ffmpeg_location = os.getenv('FFMPEG_PATH')
+    if ffmpeg_location:
+        return ffmpeg_location
+    
+    # If ffmpeg is in PATH, no need to specify location
+    if shutil.which('ffmpeg'):
+        return None
+    
+    # Only check common Windows paths if not found in PATH
+    if os.name == 'nt':
+        ffmpeg_paths = [
+            os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin'),
+            r'C:\ffmpeg\bin',
+            r'C:\Program Files\ffmpeg\bin',
+        ]
+        for path in ffmpeg_paths:
+            if os.path.exists(os.path.join(path, 'ffmpeg.exe')):
+                return path
+    
+    return None
+
+
 def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
     Download audio from a YouTube video and convert to MP3.
@@ -17,22 +49,9 @@ def download_audio(youtube_url: str, output_dir: str = "downloads") -> Tuple[Opt
     """
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
-    import shutil
     
     # FFmpeg detection
-    ffmpeg_location = os.getenv('FFMPEG_PATH')
-    if not ffmpeg_location and not shutil.which('ffmpeg'):
-        # Only check these on Windows if not found in PATH
-        if os.name == 'nt':
-            ffmpeg_paths = [
-                os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin'),
-                r'C:\ffmpeg\bin',
-                r'C:\Program Files\ffmpeg\bin',
-            ]
-            for path in ffmpeg_paths:
-                if os.path.exists(os.path.join(path, 'ffmpeg.exe')):
-                    ffmpeg_location = path
-                    break
+    ffmpeg_location = get_ffmpeg_location()
 
     # 1. Extract info first (without downloading) to get ID and Title
     try:
@@ -124,7 +143,7 @@ if __name__ == "__main__":
     # Test the service
     test_url = input("Enter YouTube URL to test: ")
     if is_youtube_url(test_url):
-        result, title = download_audio(test_url)
+        result, title, thumb = download_audio(test_url)
         if result:
             print(f"✅ Downloaded: {result}")
             print(f"   Title: {title}")

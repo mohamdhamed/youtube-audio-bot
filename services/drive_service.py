@@ -5,16 +5,19 @@ Uploads files to Google Drive using OAuth 2.0 authentication.
 
 import os
 import pickle
+import logging
 from typing import Optional
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
+logger = logging.getLogger(__name__)
 
 # Scopes required for Drive API
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
+SCOPES = ['https://www.googleapis.com/auth/drive']
 TOKEN_PATH = 'token.pickle'
 
 
@@ -38,7 +41,20 @@ def get_drive_service(credentials_path: str = "oauth_credentials.json"):
     # If no valid credentials, authenticate
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            try:
+                creds.refresh(Request())
+            except RefreshError as e:
+                logger.warning(f"Token refresh failed: {e}")
+                # Delete the stale token so a new one can be created
+                if os.path.exists(TOKEN_PATH):
+                    os.remove(TOKEN_PATH)
+                    logger.info("Deleted expired token.pickle")
+                # Re-authenticate
+                if not os.path.exists(credentials_path):
+                    print(f"❌ Credentials file not found: {credentials_path}")
+                    return None
+                flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
+                creds = flow.run_local_server(port=0)
         else:
             if not os.path.exists(credentials_path):
                 print(f"❌ Credentials file not found: {credentials_path}")
@@ -60,7 +76,7 @@ def upload_to_drive(
     folder_id: str,
     credentials_path: str = "credentials.json",
     upload_name: Optional[str] = None
-) -> Optional[str]:
+) -> tuple:
     """
     Upload a file to Google Drive.
     
@@ -71,12 +87,12 @@ def upload_to_drive(
         upload_name: Optional name for the file on Drive (defaults to local filename)
         
     Returns:
-        The file ID if successful, None if failed
+        Tuple of (file_id, error_message). file_id is None on failure.
     """
     try:
         service = get_drive_service(credentials_path)
         if service is None:
-            return None
+            return None, "فشل الاتصال بـ Google Drive (مشكلة في التوثيق)"
         
         # Get file name from path if not provided
         file_name = upload_name if upload_name else os.path.basename(file_path)
@@ -108,17 +124,15 @@ def upload_to_drive(
             fields='id, webViewLink'
         ).execute()
         
-        print(f"✅ Uploaded: {file_name}")
-        return file.get('id')
+        logger.info(f"✅ Uploaded: {file_name}")
+        return file.get('id'), None
         
     except FileNotFoundError:
-        print(f"❌ File not found: {file_path}")
-        return None
+        logger.error(f"File not found: {file_path}")
+        return None, f"الملف غير موجود: {file_path}"
     except Exception as e:
-        import traceback
-        print(f"❌ Upload error: {str(e)}")
-        traceback.print_exc()
-        return None
+        logger.error(f"Upload error: {str(e)}", exc_info=True)
+        return None, f"خطأ في الرفع: {str(e)}"
 
 
 def get_file_link(file_id: str, credentials_path: str = "credentials.json") -> Optional[str]:

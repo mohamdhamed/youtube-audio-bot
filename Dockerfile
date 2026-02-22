@@ -22,8 +22,8 @@ COPY . .
 # Create downloads directory
 RUN mkdir -p downloads
 
-# Expose health check port
-EXPOSE 8000
+# Expose health check port and dashboard port
+EXPOSE 8000 5000
 
 # Run the bot
 CMD ["python", "bot.py"]

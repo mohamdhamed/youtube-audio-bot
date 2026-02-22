@@ -12,12 +12,12 @@ services:
       - ./downloads:/app/downloads
       # Mount credentials (important for Google Drive auth)
       - ./oauth_credentials.json:/app/oauth_credentials.json:ro
-      - ./credentials.json:/app/credentials.json:ro
       - ./token.pickle:/app/token.pickle
     ports:
       - "8000:8000"
+      - "5000:5000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
       interval: 30s
       timeout: 10s
       retries: 3

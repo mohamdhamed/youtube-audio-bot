@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎛️ لوحة تحكم البوت</title>
+    <link rel="stylesheet" href="/dashboard/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-card">
+            <div class="login-icon">🤖</div>
+            <h1>لوحة تحكم البوت</h1>
+            <p>YouTube Audio Drive Bot</p>
+            <form id="login-form">
+                <input type="password" id="login-password" placeholder="كلمة السر" autocomplete="current-password" required>
+                <button type="submit" class="btn btn-primary btn-full">دخول</button>
+                <p id="login-error" class="error-text hidden"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="dashboard hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo">🤖</span>
+                <h2>لوحة التحكم</h2>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-item active" data-section="overview">
+                    <span class="nav-icon">📊</span>
+                    <span>نظرة عامة</span>
+                </button>
+                <button class="nav-item" data-section="folders">
+                    <span class="nav-icon">📁</span>
+                    <span>الفولدرات</span>
+                </button>
+                <button class="nav-item" data-section="users">
+                    <span class="nav-icon">👥</span>
+                    <span>المستخدمين</span>
+                </button>
+                <button class="nav-item" data-section="drive">
+                    <span class="nav-icon">☁️</span>
+                    <span>ملفات Drive</span>
+                </button>
+                <button class="nav-item" data-section="logs">
+                    <span class="nav-icon">📋</span>
+                    <span>السجل</span>
+                </button>
+                <button class="nav-item" data-section="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>الإعدادات</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logout-btn" class="btn btn-ghost btn-full">🚪 خروج</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Section -->
+            <section id="section-overview" class="section active">
+                <h1 class="section-title">📊 نظرة عامة</h1>
+                <div class="stats-grid">
+                    <div class="stat-card stat-green">
+                        <div class="stat-icon">🟢</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-status">شغال</span>
+                            <span class="stat-label">حالة البوت</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-blue">
+                        <div class="stat-icon">📁</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-folders">—</span>
+                            <span class="stat-label">فولدرات مفعّلة</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-purple">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-users">—</span>
+                            <span class="stat-label">مستخدمين مسموح</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-orange">
+                        <div class="stat-icon">🕐</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-time">—</span>
+                            <span class="stat-label">آخر تحديث</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-activity">
+                    <h2>📋 آخر الأنشطة</h2>
+                    <div id="overview-logs" class="log-list">
+                        <p class="empty-state">لا توجد أنشطة بعد</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Folders Section -->
+            <section id="section-folders" class="section">
+                <h1 class="section-title">📁 إدارة الفولدرات</h1>
+                <p class="section-desc">عدّل IDs مجلدات Google Drive. اترك الحقل فارغ لتعطيل الفولدر.</p>
+                <div id="folders-grid" class="folders-grid">
+                    <!-- Populated by JS -->
+                </div>
+                <button id="save-folders-btn" class="btn btn-primary" style="margin-top: 1.5rem;">💾 حفظ التغييرات</button>
+            </section>
+
+            <!-- Users Section -->
+            <section id="section-users" class="section">
+                <h1 class="section-title">👥 إدارة المستخدمين</h1>
+                <p class="section-desc">أضف أو احذف Telegram User IDs. لو القائمة فارغة، أي حد يقدر يستخدم البوت.</p>
+                <div class="user-add-form">
+                    <input type="text" id="new-user-id" placeholder="أدخل Telegram User ID" class="input">
+                    <button id="add-user-btn" class="btn btn-primary">➕ إضافة</button>
+                </div>
+                <div id="users-list" class="users-list">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Drive Files Section -->
+            <section id="section-drive" class="section">
+                <h1 class="section-title">☁️ ملفات Google Drive</h1>
+                <div class="drive-tabs" id="drive-tabs">
+                    <!-- Populated by JS -->
+                </div>
+                <div id="drive-files" class="drive-files">
+                    <p class="empty-state">اختر فولدر لعرض الملفات</p>
+                </div>
+            </section>
+
+            <!-- Logs Section -->
+            <section id="section-logs" class="section">
+                <h1 class="section-title">📋 سجل العمليات</h1>
+                <button id="refresh-logs-btn" class="btn btn-ghost" style="margin-bottom: 1rem;">🔄 تحديث</button>
+                <div id="logs-list" class="log-list">
+                    <p class="empty-state">لا توجد سجلات</p>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="section-settings" class="section">
+                <h1 class="section-title">⚙️ الإعدادات</h1>
+                <div class="settings-card">
+                    <h3>🔐 تغيير كلمة سر الداشبورد</h3>
+                    <div class="settings-form">
+                        <input type="password" id="new-password" placeholder="كلمة السر الجديدة" class="input">
+                        <input type="password" id="confirm-password" placeholder="تأكيد كلمة السر" class="input">
+                        <button id="change-password-btn" class="btn btn-primary">💾 تغيير</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="/dashboard/app.js"></script>
+</body>
+</html>

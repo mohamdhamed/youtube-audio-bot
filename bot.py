@@ -1,10 +1,13 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 from config import TELEGRAM_BOT_TOKEN, ALLOWED_USERS
-from handlers import commands, media, youtube, messages
+from handlers import commands, media, messages
 import os
+import logging
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+
+logger = logging.getLogger(__name__)
 
 def start_health_server():
     """Start HTTP server for cloud health checks."""
@@ -23,6 +26,14 @@ def start_health_server():
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     print(f"🌐 Health server running on port {port}")
+
+def start_dashboard_server():
+    """Start the web dashboard in a background thread."""
+    from dashboard import start_dashboard
+    thread = threading.Thread(target=start_dashboard, daemon=True)
+    thread.start()
+    from config import DASHBOARD_PORT
+    print(f"🎛️ Dashboard running on http://localhost:{DASHBOARD_PORT}")
 
 def main() -> None:
     """Run the bot."""
@@ -56,10 +67,16 @@ def main() -> None:
     # Text Messages (YouTube links & Unknown)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, messages.handle_text_message))
     
+    # Global Error Handler
+    async def error_handler(update, context):
+        logger.error(f"Unhandled exception: {context.error}", exc_info=context.error)
+    application.add_error_handler(error_handler)
+    
     # Start
     print("✅ Bot is running! Press Ctrl+C to stop.")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
     start_health_server()
+    start_dashboard_server()
     main()
