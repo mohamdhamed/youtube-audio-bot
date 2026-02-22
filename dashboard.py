@@ -301,6 +301,117 @@ def change_password():
     return jsonify({"success": True})
 
 
+# ==============  Google Token Management  ==============
+
+@app.route('/api/token/status')
+@login_required
+def token_status():
+    """Check Google OAuth token status."""
+    import pickle
+    from services.drive_service import TOKEN_PATH
+
+    if not os.path.exists(TOKEN_PATH):
+        return jsonify({"status": "missing", "message": "التوكن غير موجود"})
+
+    try:
+        with open(TOKEN_PATH, 'rb') as f:
+            creds = pickle.load(f)
+
+        if creds.valid:
+            expiry = creds.expiry.strftime("%Y-%m-%d %H:%M") if creds.expiry else "غير معروف"
+            return jsonify({"status": "valid", "message": f"التوكن شغال — ينتهي: {expiry}"})
+        elif creds.expired and creds.refresh_token:
+            return jsonify({"status": "expired", "message": "التوكن منتهي — يمكن تجديده"})
+        else:
+            return jsonify({"status": "invalid", "message": "التوكن تالف — لازم تعمل مصادقة جديدة"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": f"خطأ في قراءة التوكن: {str(e)}"})
+
+
+@app.route('/api/token/refresh', methods=['POST'])
+@login_required
+def token_refresh():
+    """Try to refresh the existing token."""
+    import pickle
+    from services.drive_service import TOKEN_PATH
+    from google.auth.transport.requests import Request
+
+    if not os.path.exists(TOKEN_PATH):
+        return jsonify({"error": "التوكن غير موجود — لازم تعمل مصادقة جديدة"}), 400
+
+    try:
+        with open(TOKEN_PATH, 'rb') as f:
+            creds = pickle.load(f)
+
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+            with open(TOKEN_PATH, 'wb') as f:
+                pickle.dump(creds, f)
+            log_activity("تجديد التوكن", "تم تجديد توكن Google بنجاح")
+            return jsonify({"success": True, "message": "تم تجديد التوكن بنجاح ✅"})
+        elif creds.valid:
+            return jsonify({"success": True, "message": "التوكن لسه شغال ومش محتاج تجديد"})
+        else:
+            return jsonify({"error": "التوكن تالف — لازم تعمل مصادقة جديدة"}), 400
+    except Exception as e:
+        log_activity("فشل تجديد التوكن", str(e))
+        return jsonify({"error": f"فشل التجديد: {str(e)}. لازم تعمل مصادقة جديدة."}), 500
+
+
+@app.route('/api/token/start-auth', methods=['POST'])
+@login_required
+def token_start_auth():
+    """Generate OAuth URL for new authentication."""
+    from config import CREDENTIALS_PATH
+    from services.drive_service import SCOPES
+
+    try:
+        from google_auth_oauthlib.flow import InstalledAppFlow
+        flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
+        flow.redirect_uri = 'urn:ietf:wg:oauth:2.0:oob'
+        auth_url, _ = flow.authorization_url(prompt='consent')
+
+        # Store flow in app config temporarily
+        app.config['_oauth_flow'] = flow
+
+        log_activity("بدء مصادقة جديدة", "تم إنشاء رابط المصادقة")
+        return jsonify({"auth_url": auth_url})
+    except Exception as e:
+        return jsonify({"error": f"خطأ: {str(e)}"}), 500
+
+
+@app.route('/api/token/complete-auth', methods=['POST'])
+@login_required
+def token_complete_auth():
+    """Complete OAuth flow with the authorization code."""
+    import pickle
+    from services.drive_service import TOKEN_PATH
+
+    data = request.get_json()
+    code = data.get('code', '').strip()
+
+    if not code:
+        return jsonify({"error": "لازم تدخل الكود"}), 400
+
+    flow = app.config.get('_oauth_flow')
+    if not flow:
+        return jsonify({"error": "لازم تبدأ المصادقة الأول (اضغط 'بدء المصادقة')"}), 400
+
+    try:
+        flow.fetch_token(code=code)
+        creds = flow.credentials
+
+        with open(TOKEN_PATH, 'wb') as f:
+            pickle.dump(creds, f)
+
+        app.config.pop('_oauth_flow', None)
+        log_activity("مصادقة جديدة", "تم حفظ توكن Google جديد بنجاح ✅")
+        return jsonify({"success": True, "message": "تم المصادقة بنجاح وحفظ التوكن الجديد! ✅"})
+    except Exception as e:
+        log_activity("فشل المصادقة", str(e))
+        return jsonify({"error": f"فشل المصادقة: {str(e)}"}), 500
+
+
 def start_dashboard():
     """Start the dashboard server in a thread."""
     from config import DASHBOARD_PORT

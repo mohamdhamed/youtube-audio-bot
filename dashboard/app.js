@@ -77,6 +77,7 @@ function switchSection(section) {
     if (section === 'users') loadUsers();
     if (section === 'drive') loadDriveTabs();
     if (section === 'logs') loadLogs();
+    if (section === 'settings') loadTokenStatus();
 }
 
 // ==================== Dashboard Init ====================
@@ -325,6 +326,59 @@ async function changePassword() {
     }
 }
 
+// ==================== Token Management ====================
+async function loadTokenStatus() {
+    try {
+        const data = await api('/api/token/status');
+        const el = $('#token-status');
+        const colors = { valid: 'var(--green)', expired: 'var(--orange)', missing: 'var(--red)', invalid: 'var(--red)', error: 'var(--red)' };
+        el.innerHTML = `<span style="color: ${colors[data.status] || 'var(--text-secondary)'}; font-weight: 700;">● ${data.message}</span>`;
+    } catch (err) {
+        $('#token-status').innerHTML = `<span style="color: var(--red);">❌ ${err.message}</span>`;
+    }
+}
+
+async function refreshToken() {
+    try {
+        const data = await api('/api/token/refresh', { method: 'POST' });
+        showToast(data.message, 'success');
+        loadTokenStatus();
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+async function startNewAuth() {
+    try {
+        const data = await api('/api/token/start-auth', { method: 'POST' });
+        const authFlow = $('#auth-flow');
+        authFlow.classList.remove('hidden');
+        const link = $('#auth-url-link');
+        link.href = data.auth_url;
+        link.textContent = data.auth_url;
+        showToast('افتح الرابط وسجّل دخول', 'success');
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+async function completeAuth() {
+    const code = $('#auth-code').value.trim();
+    if (!code) { showToast('الصق الكود الأول', 'error'); return; }
+    try {
+        const data = await api('/api/token/complete-auth', {
+            method: 'POST',
+            body: JSON.stringify({ code }),
+        });
+        showToast(data.message, 'success');
+        $('#auth-flow').classList.add('hidden');
+        $('#auth-code').value = '';
+        loadTokenStatus();
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
 // ==================== Event Listeners ====================
 document.addEventListener('DOMContentLoaded', () => {
     // Login
@@ -350,6 +404,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Settings
     $('#change-password-btn').addEventListener('click', changePassword);
+
+    // Token management
+    $('#refresh-token-btn').addEventListener('click', refreshToken);
+    $('#new-auth-btn').addEventListener('click', startNewAuth);
+    $('#complete-auth-btn').addEventListener('click', completeAuth);
 
     // Check if already authenticated by trying to load status
     api('/api/status').then(() => {

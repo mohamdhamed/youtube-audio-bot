@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="/dashboard/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
     <!-- Login Screen -->
@@ -16,7 +18,8 @@
             <h1>لوحة تحكم البوت</h1>
             <p>YouTube Audio Drive Bot</p>
             <form id="login-form">
-                <input type="password" id="login-password" placeholder="كلمة السر" autocomplete="current-password" required>
+                <input type="password" id="login-password" placeholder="كلمة السر" autocomplete="current-password"
+                    required>
                 <button type="submit" class="btn btn-primary btn-full">دخول</button>
                 <p id="login-error" class="error-text hidden"></p>
             </form>
@@ -112,7 +115,8 @@
                 <div id="folders-grid" class="folders-grid">
                     <!-- Populated by JS -->
                 </div>
-                <button id="save-folders-btn" class="btn btn-primary" style="margin-top: 1.5rem;">💾 حفظ التغييرات</button>
+                <button id="save-folders-btn" class="btn btn-primary" style="margin-top: 1.5rem;">💾 حفظ
+                    التغييرات</button>
             </section>
 
             <!-- Users Section -->
@@ -151,6 +155,36 @@
             <!-- Settings Section -->
             <section id="section-settings" class="section">
                 <h1 class="section-title">⚙️ الإعدادات</h1>
+
+                <!-- Google Token -->
+                <div class="settings-card" style="margin-bottom: 1.5rem;">
+                    <h3>🔑 توكن Google Drive</h3>
+                    <div id="token-status" class="token-status">
+                        <span class="spinner"></span> جاري الفحص...
+                    </div>
+                    <div class="settings-form" style="margin-top: 1rem;">
+                        <button id="refresh-token-btn" class="btn btn-primary">🔄 تجديد التوكن</button>
+                        <button id="new-auth-btn" class="btn btn-ghost">🔐 مصادقة جديدة</button>
+                    </div>
+                    <div id="auth-flow" class="hidden" style="margin-top: 1.2rem;">
+                        <p style="color: var(--text-secondary); margin-bottom: 0.8rem;">1. افتح الرابط ده في المتصفح
+                            وسجّل دخول بحساب Google:</p>
+                        <div id="auth-url-box"
+                            style="background: var(--bg-input); padding: 0.8rem; border-radius: 8px; word-break: break-all; margin-bottom: 1rem;">
+                            <a id="auth-url-link" href="#" target="_blank" style="color: var(--accent);">رابط
+                                المصادقة</a>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-bottom: 0.8rem;">2. بعد الموافقة، الصق الكود هنا:
+                        </p>
+                        <div style="display: flex; gap: 0.8rem;">
+                            <input type="text" id="auth-code" placeholder="الصق الكود هنا" class="input"
+                                style="direction: ltr;">
+                            <button id="complete-auth-btn" class="btn btn-primary">✅ تأكيد</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password -->
                 <div class="settings-card">
                     <h3>🔐 تغيير كلمة سر الداشبورد</h3>
                     <div class="settings-form">
@@ -170,4 +204,5 @@
 
     <script src="/dashboard/app.js"></script>
 </body>
+
 </html>

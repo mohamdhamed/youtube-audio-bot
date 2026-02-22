@@ -54,13 +54,27 @@ body {
 }
 
 /* ========== Scrollbar ========== */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
 
 /* ========== Hidden utility ========== */
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}
 
 /* ========== Login Screen ========== */
 .login-screen {
@@ -83,8 +97,15 @@ body {
 }
 
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .login-icon {
@@ -94,8 +115,15 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
 }
 
 .login-card h1 {
@@ -127,7 +155,9 @@ body {
 }
 
 /* ========== Inputs ========== */
-.input, input[type="password"], input[type="text"] {
+.input,
+input[type="password"],
+input[type="text"] {
     background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -139,7 +169,8 @@ body {
     width: 100%;
 }
 
-.input:focus, input:focus {
+.input:focus,
+input:focus {
     outline: none;
     border-color: var(--border-focus);
     box-shadow: 0 0 0 3px var(--accent-glow);
@@ -166,6 +197,7 @@ body {
     color: white;
     box-shadow: 0 4px 15px var(--accent-glow);
 }
+
 .btn-primary:hover {
     background: linear-gradient(135deg, var(--accent-hover), #6a62e5);
     transform: translateY(-1px);
@@ -177,6 +209,7 @@ body {
     color: var(--red);
     border: 1px solid rgba(255, 82, 82, 0.3);
 }
+
 .btn-danger:hover {
     background: rgba(255, 82, 82, 0.2);
 }
@@ -186,12 +219,15 @@ body {
     color: var(--text-secondary);
     border: 1px solid var(--border);
 }
+
 .btn-ghost:hover {
     background: var(--bg-card);
     color: var(--text-primary);
 }
 
-.btn-full { width: 100%; }
+.btn-full {
+    width: 100%;
+}
 
 .btn-sm {
     padding: 0.4rem 0.9rem;
@@ -275,7 +311,9 @@ body {
     border: 1px solid rgba(108, 99, 255, 0.2);
 }
 
-.nav-icon { font-size: 1.2rem; }
+.nav-icon {
+    font-size: 1.2rem;
+}
 
 .sidebar-footer {
     padding: 1rem;
@@ -290,12 +328,23 @@ body {
     max-width: 1100px;
 }
 
-.section { display: none; animation: fadeIn 0.3s ease; }
-.section.active { display: block; }
+.section {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.section.active {
+    display: block;
+}
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .section-title {
@@ -334,7 +383,9 @@ body {
     box-shadow: var(--shadow);
 }
 
-.stat-icon { font-size: 2.2rem; }
+.stat-icon {
+    font-size: 2.2rem;
+}
 
 .stat-value {
     display: block;
@@ -348,14 +399,41 @@ body {
     font-size: 0.85rem;
 }
 
-.stat-green .stat-value  { color: var(--green); }
-.stat-green              { border-color: rgba(0, 230, 118, 0.2); background: linear-gradient(135deg, var(--bg-card), var(--green-bg)); }
-.stat-blue  .stat-value  { color: var(--blue); }
-.stat-blue               { border-color: rgba(68, 138, 255, 0.2); background: linear-gradient(135deg, var(--bg-card), var(--blue-bg)); }
-.stat-purple .stat-value { color: var(--purple); }
-.stat-purple             { border-color: rgba(179, 136, 255, 0.2); background: linear-gradient(135deg, var(--bg-card), var(--purple-bg)); }
-.stat-orange .stat-value { color: var(--orange); }
-.stat-orange             { border-color: rgba(255, 171, 64, 0.2); background: linear-gradient(135deg, var(--bg-card), var(--orange-bg)); }
+.stat-green .stat-value {
+    color: var(--green);
+}
+
+.stat-green {
+    border-color: rgba(0, 230, 118, 0.2);
+    background: linear-gradient(135deg, var(--bg-card), var(--green-bg));
+}
+
+.stat-blue .stat-value {
+    color: var(--blue);
+}
+
+.stat-blue {
+    border-color: rgba(68, 138, 255, 0.2);
+    background: linear-gradient(135deg, var(--bg-card), var(--blue-bg));
+}
+
+.stat-purple .stat-value {
+    color: var(--purple);
+}
+
+.stat-purple {
+    border-color: rgba(179, 136, 255, 0.2);
+    background: linear-gradient(135deg, var(--bg-card), var(--purple-bg));
+}
+
+.stat-orange .stat-value {
+    color: var(--orange);
+}
+
+.stat-orange {
+    border-color: rgba(255, 171, 64, 0.2);
+    background: linear-gradient(135deg, var(--bg-card), var(--orange-bg));
+}
 
 /* ========== Folders Grid ========== */
 .folders-grid {
@@ -384,7 +462,9 @@ body {
     margin-bottom: 1rem;
 }
 
-.folder-emoji { font-size: 1.8rem; }
+.folder-emoji {
+    font-size: 1.8rem;
+}
 
 .folder-name {
     font-weight: 700;
@@ -618,6 +698,14 @@ body {
     gap: 0.8rem;
 }
 
+.token-status {
+    padding: 0.8rem 1rem;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    font-size: 0.95rem;
+}
+
 /* ========== Toast ========== */
 .toast {
     position: fixed;
@@ -668,7 +756,9 @@ body {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ========== Recent Activity card ========== */
@@ -693,7 +783,9 @@ body {
         border-bottom: 1px solid var(--border);
     }
 
-    .sidebar-header { justify-content: center; }
+    .sidebar-header {
+        justify-content: center;
+    }
 
     .nav-menu {
         flex-direction: row;
@@ -711,7 +803,9 @@ body {
         display: none;
     }
 
-    .sidebar-footer { display: none; }
+    .sidebar-footer {
+        display: none;
+    }
 
     .dashboard {
         flex-direction: column;
